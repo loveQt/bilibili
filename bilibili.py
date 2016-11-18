@@ -49,11 +49,40 @@ class AV:
         return User(up_id, name=up_name)
 
     # @property
-    def cids(self):
-        return utils.get_cids(self._aid)
+    def get_videos(self):
+        videos = []
+        cids = []
+        urls = []
+        titles = []
+        av_url = 'http://www.bilibili.com/video/av' + str(self._aid) + '/'
+        pattern1 = re.compile(r'/video/av.*/(index_.*).html')
+        pattern2 = re.compile(r'cid=(\d{5,10})&aid=(\d{5,10})&pre')
+        pattern3 = re.compile(r'\>(.+)</option>')
+        av_content = utils.get_html(av_url)
+        indexes = pattern1.findall(av_content)
+        titles = pattern3.findall(av_content)
 
-    def urls(self):
-        return
+        if not len(indexes):  # not == []
+            cids.append(pattern2.search(av_content).group(1))
+            url = self.url
+            title = self.title
+            urls.append(url)
+            titles.append(title)
+        else:
+            for index in indexes:
+                url = 'http://www.bilibili.com/video/av' + str(self._aid) + '/' + index + '.html'
+                urls.append(url)
+        for url in urls:
+            # cid_url = 'http://www.bilibili.com/video/av' + str(self._aid) + '/' + index + '.html'
+            cid_content = utils.get_html(url)
+            cid = pattern2.search(cid_content).group(1)
+            cids.append(cid)
+        videos = zip(cids, urls, titles)
+        return videos
+        # return utils.get_cids(self._aid)
+
+    # def urls(self):
+    #     return
 
     @property
     def replay(self):
@@ -78,8 +107,8 @@ class AV:
     @property
     def videos(self):
         # for cid, url in zip(self.cids, self.urls):
-        for cid in zip(self.cids):
-            yield Video(cid)
+        for video in self.get_videos():
+            yield Video(cid=video[0], url=video[1], title=video[2], aid=self._aid)
 
 
 class Video:
@@ -96,6 +125,9 @@ class Video:
     @property
     def danmu(self):
         return Danmu(self._cid)
+
+    def download_danmu(self):
+        pass
 
 
 class User:
@@ -161,14 +193,20 @@ class Comment:
 
 
 class Danmu:
-    def __init__(self,cid):
+    def __init__(self, cid):
         pass
 
 
-av = AV(637684)
+av = AV(7148183)
 up_ = av.up
 # print av
 print av.url
-print av.videos
+# print av.videos
+avc = av.videos
+print avc
+for v in avc:
+    print v._cid
+    print v._url
+    print v._title
 # print av.cids
 print av.replay, av.stow, av.coin, av.dm_count, av.title, up_.url
