@@ -186,9 +186,11 @@ class User:
     def av_tag(self):
         return
 
-
+# Comment类的实例为一个视频的评论区，而非某一条评论
 class Comment:
-    def __init__(self):
+    def __init__(self, aid):
+        self._aid = aid
+
         pass
 
 
