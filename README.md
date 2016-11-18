@@ -79,3 +79,5 @@ B站默认无法查看弹幕发送者，而是对用户真是id做了一层hash�
 * http://biliquery.typcn.com/api/user/hash/用户Hash
 
 ## 视频下载
+
+参考you-get中的bilibili.py
