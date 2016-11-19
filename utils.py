@@ -10,7 +10,7 @@ def get_html(url, headers=None, data=None):
     return requests.post(url, headers=headers, data=data).content
 
 
-def datetime_to_timestamp_in_milliseconds():
+def datetime_to_timestamp_in_milliseconds(d):
     def current_milli_time(): return int(round(time.time() * 1000))
     return current_milli_time()
 

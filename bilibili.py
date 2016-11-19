@@ -1,11 +1,24 @@
 # -*-coding:utf8-*-
 import re
 import utils
+import datetime
+import json
 
 _bilibili_URL = 'http://www.bilibili.com/'
 _bilibili_space_URL = 'http://space.bilibili.com/'
 _bilibili_av_info_prefix = 'http://interface.bilibili.com/count?key=5febfb9006283a2e07e6f711&aid='
-_bilibili_user_info_prefix = ''
+_bilibili_user_info_prefix = 'http://space.bilibili.com/ajax/member/GetInfo'
+_bilibili_user_tags_prefix = 'http://space.bilibili.com/ajax/member/getTags'
+_bilibili_user_head={
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+    'X-Requested-With': 'XMLHttpRequest',
+    'Referer': 'http://space.bilibili.com',
+    'Origin': 'http://space.bilibili.com',
+    'Host': 'space.bilibili.com',
+    'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0',
+    'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4',
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+}
 
 _av_api_pattern = re.compile('\d{1,10}')
 _av_up_pattern = re.compile('<a class="up-name" href="http://space.bilibili.com/(.*)#!/" target="_blank">UP主: (.*)</a>')
@@ -138,13 +151,31 @@ class User:
         self._sex = sex
         self._reg_date = reg_date
 
+    def get_info(self):
+        data1 = {
+            '_': utils.datetime_to_timestamp_in_milliseconds(datetime.datetime.now()),
+            'mid': str(self._uid)
+        }
+        data2 = {
+            '_': utils.datetime_to_timestamp_in_milliseconds(datetime.datetime.now()),
+            'mids': str(self._uid)
+        }
+        info = json.loads(utils.get_html(_bilibili_user_info_prefix,headers=_bilibili_user_head,data=data1))
+        tags = json.loads(utils.get_html(_bilibili_user_tags_prefix,headers=_bilibili_user_head,data=data2))
+        # print info,tags
+        return info,tags
+
+
     @property
     def url(self):
         return _bilibili_space_URL + str(self._uid)
 
     @property
     def name(self):
-        return
+        info = self.get_info()[0]
+        # print info
+        if info['status'] == True:
+            return info['data']['name']
 
     @property
     def sex(self):
@@ -180,7 +211,10 @@ class User:
 
     @property
     def tag(self):
-        return
+        tags = self.get_info()[1]
+        if tags['status'] == True:
+            tag = tags['data'][0]['tags']
+            return ';'.join(tag)
 
     @property
     def av_tag(self):
@@ -211,4 +245,4 @@ for v in avc:
     print v._url
     print v._title
 # print av.cids
-print av.replay, av.stow, av.coin, av.dm_count, av.title, up_.url
+print av.replay, av.stow, av.coin, av.dm_count, av.title, up_.name,up_.tag
