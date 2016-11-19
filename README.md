@@ -2,7 +2,13 @@
 # B站爬虫、API和一些常用URI分析与记录
 ## 个人信息
 * 基础信息
-* 标签
+
+http://space.bilibili.com/ajax/member/GetInfo
+
+* 
+
+http://space.bilibili.com/ajax/member/getTags
+
 * 投稿
 * 订阅
 * 关注
