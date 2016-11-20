@@ -9,7 +9,7 @@ _bilibili_space_URL = 'http://space.bilibili.com/'
 _bilibili_av_info_prefix = 'http://interface.bilibili.com/count?key=5febfb9006283a2e07e6f711&aid='
 _bilibili_user_info_prefix = 'http://space.bilibili.com/ajax/member/GetInfo'
 _bilibili_user_tags_prefix = 'http://space.bilibili.com/ajax/member/getTags'
-_bilibili_user_head={
+_bilibili_user_head = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
     'X-Requested-With': 'XMLHttpRequest',
     'Referer': 'http://space.bilibili.com',
@@ -63,14 +63,14 @@ class AV:
 
     # @property
     def get_videos(self):
-        videos = []
+        # videos = []
         cids = []
         urls = []
-        titles = []
+        # titles = []
         av_url = 'http://www.bilibili.com/video/av' + str(self._aid) + '/'
         pattern1 = re.compile(r'/video/av.*/(index_.*).html')
         pattern2 = re.compile(r'cid=(\d{5,10})&aid=(\d{5,10})&pre')
-        pattern3 = re.compile(r'\>(.+)</option>')
+        pattern3 = re.compile(r'>(.+)</option>')
         av_content = utils.get_html(av_url)
         indexes = pattern1.findall(av_content)
         titles = pattern3.findall(av_content)
@@ -129,6 +129,7 @@ class Video:
         self._cid = cid
         self._url = url
         self._title = title
+        self._aid = aid
 
     @property
     def url(self):
@@ -148,8 +149,11 @@ class User:
         self._uid = uid
         self._url = url
         self._name = name
-        self._sex = sex
+        # self._sex = sex
         self._reg_date = reg_date
+        info = self.get_info()[0]
+        self._place = info['data']['place']
+        self._sex = info['data']['sex']
 
     def get_info(self):
         data1 = {
@@ -160,11 +164,11 @@ class User:
             '_': utils.datetime_to_timestamp_in_milliseconds(datetime.datetime.now()),
             'mids': str(self._uid)
         }
-        info = json.loads(utils.get_html(_bilibili_user_info_prefix,headers=_bilibili_user_head,data=data1))
-        tags = json.loads(utils.get_html(_bilibili_user_tags_prefix,headers=_bilibili_user_head,data=data2))
+        info = json.loads(utils.get_html(_bilibili_user_info_prefix, headers=_bilibili_user_head, data=data1))
+        tags = json.loads(utils.get_html(_bilibili_user_tags_prefix, headers=_bilibili_user_head, data=data2))
+        if info['status'] is True & tags['status'] is True:
         # print info,tags
-        return info,tags
-
+            return info, tags
 
     @property
     def url(self):
@@ -174,12 +178,12 @@ class User:
     def name(self):
         info = self.get_info()[0]
         # print info
-        if info['status'] == True:
-            return info['data']['name']
+        # if info['status'] is True:
+        return info['data']['name']
 
-    @property
-    def sex(self):
-        return
+    # @property
+    # def sex(self):
+    #     return
 
     @property
     def reg_date(self):
@@ -220,6 +224,7 @@ class User:
     def av_tag(self):
         return
 
+
 # Comment类的实例为一个视频的评论区，而非某一条评论
 class Comment:
     def __init__(self, aid):
@@ -245,4 +250,4 @@ for v in avc:
     print v._url
     print v._title
 # print av.cids
-print av.replay, av.stow, av.coin, av.dm_count, av.title, up_.name,up_.tag
+print av.replay, av.stow, av.coin, av.dm_count, av.title, up_.name, up_.tag,up_._sex,up_._place
