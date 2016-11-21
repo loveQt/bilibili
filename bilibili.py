@@ -3,6 +3,7 @@ import re
 import utils
 import datetime
 import json
+import time
 
 _bilibili_URL = 'http://www.bilibili.com/'
 _bilibili_space_URL = 'http://space.bilibili.com/'
@@ -145,15 +146,18 @@ class Video:
 
 
 class User:
-    def __init__(self, uid, url=None, name=None, sex=None, reg_date=None):
+    def __init__(self, uid, url=None, name=None, sex=None):
         self._uid = uid
         self._url = url
-        self._name = name
         # self._sex = sex
-        self._reg_date = reg_date
-        info = self.get_info()[0]
-        self._place = info['data']['place']
-        self._sex = info['data']['sex']
+        self.user_info = self.get_info()
+        self.info = self.user_info[0]['data']
+        self.tags = self.user_info[1]['data'][0]['tags']
+        self._place = self.info['place']
+        self._sex = self.info['sex']
+        self._name = self.info['name']
+        self._reg_date = self.reg_date
+        self._tags = ';'.join(self.tags)
 
     def get_info(self):
         data1 = {
@@ -167,7 +171,7 @@ class User:
         info = json.loads(utils.get_html(_bilibili_user_info_prefix, headers=_bilibili_user_head, data=data1))
         tags = json.loads(utils.get_html(_bilibili_user_tags_prefix, headers=_bilibili_user_head, data=data2))
         if info['status'] is True & tags['status'] is True:
-        # print info,tags
+            # print info,tags
             return info, tags
 
     @property
@@ -187,7 +191,8 @@ class User:
 
     @property
     def reg_date(self):
-        return
+        regtime = self.info['regtime']
+        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(regtime))
 
     @property
     def birthday(self):
@@ -213,12 +218,12 @@ class User:
     def exp(self):
         return
 
-    @property
-    def tag(self):
-        tags = self.get_info()[1]
-        if tags['status'] == True:
-            tag = tags['data'][0]['tags']
-            return ';'.join(tag)
+    # @property
+    # def tag(self):
+    #     tags = self.get_info()[1]
+    #     if tags['status'] == True:
+    #         tag = tags['data'][0]['tags']
+    #         return ';'.join(tag)
 
     @property
     def av_tag(self):
@@ -250,4 +255,5 @@ for v in avc:
     print v._url
     print v._title
 # print av.cids
-print av.replay, av.stow, av.coin, av.dm_count, av.title, up_.name, up_.tag,up_._sex,up_._place
+print av.replay, av.stow, av.coin, av.dm_count, av.title
+print up_.name, up_._tags, up_._sex, up_._place, up_._reg_date
